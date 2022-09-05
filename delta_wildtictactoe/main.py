@@ -6,6 +6,7 @@ from game_mechanics import (
     Cell,
     WildTictactoeEnv,
     choose_move_randomly,
+    human_player,
     load_dictionary,
     play_wild_ttt_game,
     render,
@@ -62,33 +63,33 @@ def choose_move(board: List[str], value_function: Dict) -> Tuple[int, str]:
 
 if __name__ == "__main__":
 
-    # ## Example workflow, feel free to edit this! ###
-    # my_value_fn = train()
-    # save_dictionary(my_value_fn, TEAM_NAME)
+    ## Example workflow, feel free to edit this! ###
+    my_value_fn = train()
+    save_dictionary(my_value_fn, TEAM_NAME)
 
-    # # Make sure I do not error, or your submission will
-    # # not work in the competition
-    # check_submission(TEAM_NAME)
+    # Make sure I do not error, or your submission will
+    # not work in the competition
+    check_submission(TEAM_NAME)
 
-    # my_value_fn = load_dictionary(TEAM_NAME)
+    my_value_fn = load_dictionary(TEAM_NAME)
 
-    # def choose_move_no_value_fn(board: List[str]) -> Tuple[int, str]:
-    #     """
-    #     The arguments in play_wild_ttt_game() require functions
-    #      that only take the state as input.
+    def choose_move_no_value_fn(board: List[str]) -> Tuple[int, str]:
+        """The arguments in play_wild_ttt_game() require functions that only take the state as
+        input.
 
-    #     This converts choose_move() to that format.
-    #     """
-    #     return choose_move(board, my_value_fn)
+        This converts choose_move() to that format.
+        """
+        return choose_move(board, my_value_fn)
 
-    # # Code below plays a single game of Wild Tic-Tac-Toe vs a random
-    # # opponent, think about how you might want to adapt this to
-    # # test the performance of your algorithm.
+    # Code below plays a single game of Wild Tic-Tac-Toe vs a random
+    # opponent, think about how you might want to adapt this to
+    # test the performance of your algorithm.
 
+    # Play against your bot!!
     play_wild_ttt_game(
-        your_choose_move=choose_move_randomly,
-        opponent_choose_move=choose_move_randomly,
-        game_speed_multiplier=10,
+        your_choose_move=human_player,
+        opponent_choose_move=choose_move_no_value_fn,
+        game_speed_multiplier=1,
         verbose=True,
         render=True,
     )

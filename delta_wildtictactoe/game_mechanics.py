@@ -1,9 +1,10 @@
+import math
 import os
 import pickle
 import random
+import time
 from pathlib import Path
 from time import sleep
-import time
 from typing import Callable, Dict, Iterable, List, Optional, Tuple
 
 import numpy as np
@@ -73,8 +74,8 @@ def play_wild_ttt_game(
         verbose=verbose,
         render=render,
     )
-    n_games = 3
 
+    n_games = 3
     for _ in range(n_games):
         state, reward, done, info = game.reset()
         while not done:
@@ -449,16 +450,37 @@ def render(screen, board: List, counter_players: Dict[Tuple[int, int], str], pla
     for counter in [Cell.X, Cell.O]:
         check_and_draw_win(board, counter, screen=screen, player_move=player_move)
 
-    # game_quit = False
-    # for event in pygame.event.get():
-    #     if event.type == pygame.QUIT or (event.type == pygame.MOUSEBUTTONDOWN):
-    #         game_quit = True
-
-    #     if event.type == pygame.MOUSEBUTTONDOWN and not game_quit:
-
-    #         draw_pieces(screen, board, counter_players)
-
-    #         for counter in [Cell.X, Cell.O]:
-    #             check_and_draw_win(board, counter, screen=screen, player_move=player_move)
-
     pygame.display.update()
+
+
+def pos_to_coord(pos: Tuple[int, int]):
+    n_rows = 3
+    # Assume square board
+    square_size = WIDTH / n_rows
+
+    col = math.floor(pos[0] / square_size)
+    row = math.floor(pos[1] / square_size)
+    return row, col
+
+
+def coord_to_action(coord: Tuple[int, int]):
+    return coord[0] * 3 + coord[1]
+
+
+LEFT = 1
+RIGHT = 3
+
+
+def human_player(state) -> Tuple[int, str]:
+    while True:
+        ev = pygame.event.get()
+        for event in ev:
+            if event.type == pygame.MOUSEBUTTONUP:
+                pos = pygame.mouse.get_pos()
+                coord = pos_to_coord(pos)
+                square = coord_to_action(coord)
+
+                if event.button == RIGHT:
+                    return (square, Cell.X)
+                if event.button == LEFT:
+                    return (square, Cell.O)
