@@ -23,7 +23,7 @@ rmEmptyDirs(){
 
 flattenDir(){
     local DIR="$1"
-    find "$DIR" -not -path "./images/*" -mindepth 2 -type f -exec mv -i '{}' "$DIR" ';'
+    find "$DIR" ! -path "./images/*" ! -path "./.git/*" -mindepth 2 -type f -exec mv -i '{}' "$DIR" ';'
 
 }
 
