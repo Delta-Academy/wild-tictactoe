@@ -1,4 +1,4 @@
-# RL for Wild Tic-Tac-Toe :o::x:
+# RL for Wild Tic-Tac-Toe :o::x::x::x::o:
 
 Wild Tic-Tac-Toe is a twist on the classic game of Tic-Tac-Toe.
 
@@ -84,57 +84,50 @@ Write this function to build the dictionary that your `choose_move` function wil
 
 **Outputs**:
 
-- Value function dictionary that you've trained (this should then saved by `save_dictionary()` so you can submit a `.pkl` file)Start by discussing the problem with your partner. Write down what the state, the action & the rewards are for this game.
+- Value function dictionary that you've trained (this should then saved by `save_dictionary()` so you can submit a `.pkl` file). Start by discussing the problem with your partner. Write down what the state, the action & the rewards are for this game.
 
-### The **`render()`** Function
+### The **`play_wild_ttt_game()`** function
 
-Plays a single graphical game against a randomly moving opponent. You play as the blue team.
+This demonstrates how to interact with with the `WildTicTacToeEnv` (see below). You can also use this to play against your bot!
 
-**Input:**
+`play_wild_ttt_game()` takes the following arguments:
 
-- choose_move (a function) - your choose_move function which takes just the state as input.
+- **your_choose_move**: choose_move function to take your move. Set this to `human_player` to play against your bot! This player plays as blue
+- **opponent_choose_move**: choose_move function to take your opponents move. Set this to `choose_move_no_value_fn` to call the choose_move function in your main file. This player plays as red.
+- **game_speed_multiplier**: speed to play the game at (only has an effect if render=True. High = fast, low = slow).
+- **verbose**: boolean. print info to the console?
+- **render**: boolean. render the game graphically?
 
-<details>
-<summary><code style="white-space:nowrap;">  WildTictactoeEnv</code> class</summary>
-The environment class controls the game and runs the opponent. It should be used for training your agent.
-<br />
-<br />
+### The **`human_player()`** function
+
+See if you can beat your bot! Click on the board to take a move. Left click to place an `O`. Right click to place an `X`.
+
+### The **`WildTicTacToeEnv`** class
+
+The environment class controls the game and takes the opponent's move. It should be used for training your agent.
+
 See example usage in <code style="white-space:nowrap;">play_wild_ttt_game()</code>.
-<br />
-<br />
+
 The opponent's <code style="white-space:nowrap;">choose_move</code> function is input at initialisation (when <code style="white-space:nowrap;">WildTictactoeEnv(opponent_choose_move)</code> is called). The first player is chosen at random when <code style="white-space:nowrap;">WildTictactoeEnv.reset()</code> is called. Every time you call <code style="white-space:nowrap;">WildTictactoeEnv.step()</code>, 2 moves are taken: yours and then your opponent's.
-    <br />
-    <br />
-    Both <code style="white-space:nowrap;">  WildTictactoeEnv.step()</code> and <code style="white-space:nowrap;">  WildTictactoeEnv.reset()</code> have <code style="white-space:nowrap;">  verbose</code> arguments which print debugging info to console when set to <code style="white-space:nowrap;">True</code>.
-</details>
 
-```
-WildTictactoeEnv documentation:
+The env also has `verbose` and `render` arguments which are useful for debugging your agent.
 
-.reset(): starts a new game with a clean board and
-          randomly chosen first player. If your
-          opponent moves first, they take their 1st move.
+`Verbose`: prints useful information to the console after each turn
 
-.step():  Make a move. This function takes three
-          arguments: position & counter (see
-          choose_move() for more info) and verbose
-          - whether to print the state of the
-          board after each move. It returns a
-          tuple of length 4 (see 'Variables'
-          below).
+`render`: Graphically renders your bot's games. You can use this to play against the bot yourself!
+
+The Env also has a number of methods:
+
+- `reset()`: starts a new game with a clean board and randomly chosen first player. If your opponent moves first, they take their 1st move.
+
+- `step()`: Make a move. This function takes a single argument - the action to take (tuple) and returns a tuple of length 4 (see 'Variables' below).
 
 Both reset and step return the same 4 variables:
-    observation (List[int]): The state of the board as a
-                             list of ints (see choose_move)
-    reward [1, 0, -1]: The reward after the current
-                       move. 1 = win, 0 = draw, -1 = loss.
-    done (bool): True if the game is over, False otherwise.
-    info (dict): Additional information about the current
-                 state of the game.
-                 "winner": game winner, if one exists.
-                 "player_move": next player to take a move
 
-```
+- **observation** (List[int]): The state of the board as a list of ints (see choose_move)
+- **reward** (int): The reward after the current move. 1 = win, 0 = draw, -1 = loss.
+- **done** (bool): True if the game is over, False otherwise
+- **info** (dict): Additional information about the current state of the game. Keys: "winner" - the game winner, if one exists. "player_move" - next player to take a move
 
 ## Guidance on Building a Winning Agent :trophy:
 
