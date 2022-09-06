@@ -12,42 +12,31 @@ import pygame
 
 HERE = Path(__file__).parent.resolve()
 
-######## Below are classes and functions you will use to implement
-# your wild-tic-tac-toe AI ######
-
 
 ########## USEFUL FUNCTIONS ##########
 
 
-def save_dictionary(my_dict: Dict, team_name: str) -> None:
-    assert isinstance(
-        my_dict, dict
-    ), f"train() function should output a dict, but got: {type(my_dict)}"
-    assert "/" not in team_name, "Invalid TEAM_NAME. '/' are illegal in TEAM_NAME"
+def reward_function(board: List[List[str]]) -> int:
+    """Returns the reward that the player would recieve from 'board'.
 
-    n_retries = 5
-    dict_path = os.path.join(HERE, f"dict_{team_name}.pkl")
-    for attempt in range(n_retries):
-        try:
-            with open(dict_path, "wb") as f:
-                pickle.dump(my_dict, f)
-            load_dictionary(team_name)
-            return
-        except Exception as e:
-            if attempt == n_retries - 1:
-                raise
+    Useful for one step lookahead!
 
-
-def load_dictionary(team_name: str, umbrella: Path = HERE) -> Dict:
-    dict_path = os.path.join(umbrella, f"dict_{team_name}.pkl")
-    with open(dict_path, "rb") as f:
-        return pickle.load(f)
+    Note:
+    This function only return 0 or 1 as it's only for one step lookahead.
+    You shouldn't use it too look two steps ahead to see if you might lose!
+    """
+    return int(is_winner(board))
 
 
 def choose_move_randomly(board: List[str]) -> Tuple[int, str]:
     position: int = random.choice([count for count, item in enumerate(board) if item == Cell.EMPTY])
     counter: str = random.choice([Cell.O, Cell.X])
     return position, counter
+
+
+def mark_square(board: List[List[str]], row: int, col: int, counter: str) -> List[List[str]]:
+    board[row][col] = counter
+    return board
 
 
 def play_wild_ttt_game(
@@ -108,11 +97,6 @@ class Player:
 
     player = "player"
     opponent = "opponent"
-
-
-def mark_square(board: List[List[str]], row: int, col: int, counter: str) -> List[List[str]]:
-    board[row][col] = counter
-    return board
 
 
 def is_board_full(board: List[List[str]]) -> bool:
@@ -472,6 +456,8 @@ RIGHT = 3
 
 
 def human_player(state) -> Tuple[int, str]:
+    print("Your move, click to place a tile!")
+
     while True:
         ev = pygame.event.get()
         for event in ev:
@@ -484,3 +470,28 @@ def human_player(state) -> Tuple[int, str]:
                     return (square, Cell.X)
                 if event.button == LEFT:
                     return (square, Cell.O)
+
+
+def save_dictionary(my_dict: Dict, team_name: str) -> None:
+    assert isinstance(
+        my_dict, dict
+    ), f"train() function should output a dict, but got: {type(my_dict)}"
+    assert "/" not in team_name, "Invalid TEAM_NAME. '/' are illegal in TEAM_NAME"
+
+    n_retries = 5
+    dict_path = os.path.join(HERE, f"dict_{team_name}.pkl")
+    for attempt in range(n_retries):
+        try:
+            with open(dict_path, "wb") as f:
+                pickle.dump(my_dict, f)
+            load_dictionary(team_name)
+            return
+        except Exception as e:
+            if attempt == n_retries - 1:
+                raise
+
+
+def load_dictionary(team_name: str, umbrella: Path = HERE) -> Dict:
+    dict_path = os.path.join(umbrella, f"dict_{team_name}.pkl")
+    with open(dict_path, "rb") as f:
+        return pickle.load(f)
