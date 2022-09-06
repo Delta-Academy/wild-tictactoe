@@ -14,7 +14,7 @@ from game_mechanics import (
 )
 
 TEAM_NAME = "Team Name"  # <---- Enter your team name here!
-assert TEAM_NAME != "Team Namee", "Please change your TEAM_NAME!"
+assert TEAM_NAME != "Team Name", "Please change your TEAM_NAME!"
 
 
 def train() -> Dict:

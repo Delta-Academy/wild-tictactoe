@@ -38,8 +38,8 @@ def save_dictionary(my_dict: Dict, team_name: str) -> None:
                 raise
 
 
-def load_dictionary(team_name: str) -> Dict:
-    dict_path = os.path.join(HERE, f"dict_{team_name}.pkl")
+def load_dictionary(team_name: str, umbrella: Path = HERE) -> Dict:
+    dict_path = os.path.join(umbrella, f"dict_{team_name}.pkl")
     with open(dict_path, "rb") as f:
         return pickle.load(f)
 
@@ -221,7 +221,7 @@ class WildTictactoeEnv:
             print(self)
 
         self.counter_players[(row, col)] = self.player_move
-        if render:
+        if self.render:
             self.render_game()
 
         winner = is_winner(self.board)
@@ -246,7 +246,7 @@ class WildTictactoeEnv:
             print(self)
 
         self.counter_players: Dict[Tuple[int, int], str] = {}
-        if render:
+        if self.render:
             self.render_game()
 
         if self.player_move == Player.opponent:
@@ -278,7 +278,7 @@ CROSS_WIDTH = 25
 SPACE = 55
 
 RED = (255, 0, 0)
-BG_COLOR = (0, 0, 0)
+BG_COLOR = (26, 28, 31)
 LINE_COLOR = (255, 255, 255)
 CIRCLE_COLOR = (239, 231, 200)
 CROSS_COLOR = (66, 66, 66)
