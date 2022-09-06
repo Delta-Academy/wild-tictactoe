@@ -6,6 +6,7 @@
 
 rmEmptyDirs(){
     local DIR="$1"
+    echo "howdy"
     for dir in "$DIR"/*/
     do
         [ -d "${dir}" ] || continue # if not a directory, skip
@@ -27,13 +28,31 @@ flattenDir(){
 
 }
 
-read -p "Do you wish to flatten folder: ${1}? " -n 1 -r
 
-echo    # (optional) move to a new line
+getFolders(){
+    find . -depth 1 -type d
+}
+
+moveFolders(){
+    local DIR="$1"
+    folder=$(getFolders)
+
+    declare -a keepInFolders=("images", ".git" )
+
+    for keep in ${keepInFolders[@]}; do
+        path=$folder/$keep
+        mv $path $DIR
+    done
+
+}
+
+read -p "Do you wish to flatten folder: ${1}? " -n 1 -r
 
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
     flattenDir "$1" &
+    rmEmptyDirs "$1" &
+    moveFolders "$1" &
     rmEmptyDirs "$1" &
     echo "Done";
 fi
