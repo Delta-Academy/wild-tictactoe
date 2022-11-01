@@ -16,11 +16,20 @@ HERE = Path(__file__).parent.resolve()
 
 
 def reward_function(board: List[str]) -> int:
+    """This function returns the reward that would be given to the player who played the most recent
+    move on 'board'.
+
+    Returns either 0 or 1
+    """
     winner = is_winner(board)
     return int(winner)
 
 
 def choose_move_randomly(board: List[str]) -> Tuple[int, str]:
+    """This function takes a random move.
+
+    It is an excellent first opponent to set as opponent_choose_move
+    """
     position: int = random.choice([count for count, item in enumerate(board) if item == Cell.EMPTY])
     counter: str = random.choice([Cell.O, Cell.X])
     return position, counter
