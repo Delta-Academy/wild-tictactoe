@@ -4,7 +4,7 @@ from typing import Dict
 
 import delta_utils.check_submission as checker
 
-from game_mechanics import flatten_board, get_empty_board, load_dictionary
+from game_mechanics import get_empty_board, load_dictionary
 
 
 def pkl_checker_value_dict(pkl_file: Dict) -> None:
@@ -23,7 +23,7 @@ def pkl_checker_value_dict(pkl_file: Dict) -> None:
 
 
 def check_submission(team_name: str) -> None:
-    example_state = flatten_board(get_empty_board())
+    example_state = get_empty_board()
     expected_choose_move_return_type = tuple
     game_mechanics_expected_hash = (
         "f94f1d73d5c3b91b32d743e18c70664194690aa6282b3c07e269f2f403a504d0"
