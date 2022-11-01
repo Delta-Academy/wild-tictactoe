@@ -12,7 +12,7 @@ import pygame
 HERE = Path(__file__).parent.resolve()
 
 
-########## USEFUL FUNCTIONS ##########
+####################### USEFUL FUNCTIONS #############################
 
 
 def reward_function(board: List[str]) -> int:
@@ -95,7 +95,7 @@ class Cell:
     O = "O"
 
 
-########## LESS USEFUL ##########
+############################ LESS USEFUL ##################################
 
 
 class Player:
