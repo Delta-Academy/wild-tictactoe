@@ -102,6 +102,14 @@ This demonstrates how to interact with with the `WildTicTacToeEnv` (see below). 
 
 See if you can beat your bot! Click on the board to take a move. Left click to place an `O`. Right click to place an `X`.
 
+### The **`reward()`** function
+
+This function returns the reward that would be given to the player who played the most recent move. So it returns either 0 or 1. Use me for one step lookahead only!
+
+### The **`choose_move_randomly()`** function
+
+Chooses a random move for a given board, an excellent first opponent that you should learn to beat!
+
 ### The **`WildTicTacToeEnv`** class
 
 The environment class controls the game and takes the opponent's move. It should be used for training your agent.

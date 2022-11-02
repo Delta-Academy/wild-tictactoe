@@ -4,8 +4,7 @@ import pickle
 import random
 import time
 from pathlib import Path
-from time import sleep
-from typing import Callable, Dict, Iterable, List, Optional, Tuple
+from typing import Callable, Dict, Iterable, List, Tuple
 
 import numpy as np
 import pygame
@@ -13,29 +12,37 @@ import pygame
 HERE = Path(__file__).parent.resolve()
 
 
-########## USEFUL FUNCTIONS ##########
+####################### USEFUL FUNCTIONS #############################
 
 
-def reward_function(board: List[List[str]]) -> int:
-    """Returns the reward that the player would recieve from 'board'.
+def reward_function(board: List[str]) -> int:
+    """This function returns the reward that wo be given to the player who played the most recent
+    move on 'board'.
 
-    Useful for one step lookahead!
-
-    Note:
-    This function only return 0 or 1 as it's only for one step lookahead.
-    You shouldn't use it too look two steps ahead to see if you might lose!
+    Returns either 0 or 1
     """
     return int(is_winner(board))
 
 
 def choose_move_randomly(board: List[str]) -> Tuple[int, str]:
+    """This function takes a random move.
+
+    It is an excellent first opponent to set as opponent_choose_move
+    """
     position: int = random.choice([count for count, item in enumerate(board) if item == Cell.EMPTY])
     counter: str = random.choice([Cell.O, Cell.X])
     return position, counter
 
 
-def mark_square(board: List[List[str]], row: int, col: int, counter: str) -> List[List[str]]:
-    board[row][col] = counter
+def place_counter(board: List[str], position: int, counter: str) -> List[str]:
+    """Place counter into board at position.
+
+    Returns a copy of the board so does not mutate the original in place.
+    """
+    board = board.copy()
+    check_action_valid((position, counter), board)
+    board[position] = counter
+
     return board
 
 
@@ -64,12 +71,11 @@ def play_wild_ttt_game(
         render=render,
     )
 
-    n_games = 3
-    for _ in range(n_games):
-        state, reward, done, info = game.reset()
-        while not done:
-            action = your_choose_move(state)
-            state, reward, done, info = game.step(action)
+    state, reward, done, info = game.reset()
+    while not done:
+
+        action = your_choose_move(state)
+        state, reward, done, info = game.step(action)
 
 
 class Cell:
@@ -85,7 +91,7 @@ class Cell:
     O = "O"
 
 
-########## LESS USEFUL ##########
+############################ LESS USEFUL ##################################
 
 
 class Player:
@@ -99,9 +105,9 @@ class Player:
     opponent = "opponent"
 
 
-def is_board_full(board: List[List[str]]) -> bool:
+def is_board_full(board: List[str]) -> bool:
     """Check if the board is full by checking for empty cells after flattening board."""
-    return all(c != Cell.EMPTY for c in [i for sublist in board for i in sublist])
+    return all(c != Cell.EMPTY for c in board)
 
 
 def _check_winning_set(iterable: Iterable[str]) -> bool:
@@ -109,37 +115,49 @@ def _check_winning_set(iterable: Iterable[str]) -> bool:
     return Cell.EMPTY not in unique_pieces and len(unique_pieces) == 1
 
 
-def is_winner(board: List[List[str]]) -> bool:
+def is_winner(board: List[str]) -> bool:
+    # 3x3 list of lists representing board
+    nested_board = [board[i : i + 3] for i in range(0, len(board), 3)]
+
     # Check rows
-    for row in board:
+    for row in nested_board:
         if _check_winning_set(row):
             return True
 
     # Check columns
-    for column in [*zip(*board)]:
+    for column in [*zip(*nested_board)]:
         if _check_winning_set(column):
             return True
 
     # Check major diagonal
-    size = len(board)
-    major_diagonal = [board[i][i] for i in range(size)]
+    size = len(nested_board)
+    major_diagonal = [nested_board[i][i] for i in range(size)]
     if _check_winning_set(major_diagonal):
         return True
 
     # Check minor diagonal
-    minor_diagonal = [board[i][size - i - 1] for i in range(size)]
-    if _check_winning_set(minor_diagonal):
-        return True
-
-    return False
+    minor_diagonal = [nested_board[i][size - i - 1] for i in range(size)]
+    return bool(_check_winning_set(minor_diagonal))
 
 
-def get_empty_board() -> List[List[str]]:
-    return [
-        [Cell.EMPTY, Cell.EMPTY, Cell.EMPTY],
-        [Cell.EMPTY, Cell.EMPTY, Cell.EMPTY],
-        [Cell.EMPTY, Cell.EMPTY, Cell.EMPTY],
-    ]
+def get_empty_board() -> List[str]:
+    return [Cell.EMPTY] * 9
+
+
+def check_action_valid(action: Tuple[int, str], board: List[str]):
+
+    assert isinstance(action, tuple), "Action must be a tuple of (position, counter)"
+    assert isinstance(action[0], int), "Action[0] must be an integer"
+    assert isinstance(action[1], str), "Action[1] must be a string"
+
+    position, counter = action
+
+    assert position in range(9), "Position must be between 0 and 8"
+    assert (
+        board[position] == Cell.EMPTY
+    ), "You moved onto a square that already has a counter on it!"
+
+    assert counter in {Cell.X, Cell.O}, "Counter must be either X or O"
 
 
 class WildTictactoeEnv:
@@ -173,7 +191,7 @@ class WildTictactoeEnv:
         reward = self._step(action)
 
         if not self.done:
-            opponent_action = self.opponent_choose_move(flatten_board(self.board))
+            opponent_action = self.opponent_choose_move(self.board)
             opponent_reward = self._step(opponent_action)
             # Negative sign is because the opponent's victory is your loss
             reward -= opponent_reward
@@ -186,25 +204,21 @@ class WildTictactoeEnv:
             elif self.done:
                 print("Game Drawn!")
 
-        return flatten_board(self.board), reward, self.done, {}
+        return self.board, reward, self.done, {}
 
     def _step(self, action: Tuple[int, str]) -> int:
 
         assert not self.done, "Game is done. Call reset() before taking further steps."
+        check_action_valid(action, self.board)
 
         position, counter = action
-        row, col = convert_to_indices(position)
 
-        assert (
-            self.board[row][col] == Cell.EMPTY
-        ), "You moved onto a square that already has a counter on it!"
-
-        self.board = mark_square(self.board, row, col, counter)
+        self.board = place_counter(self.board, position, counter)
         if self.verbose:
             print(f"{self.player_move} makes a move!")
             print(self)
 
-        self.counter_players[(row, col)] = self.player_move
+        self.counter_players[position] = self.player_move
         if self.render:
             self.render_game()
 
@@ -229,17 +243,20 @@ class WildTictactoeEnv:
             print("Game starts!")
             print(self)
 
-        self.counter_players: Dict[Tuple[int, int], str] = {}
+        self.counter_players: Dict[int, str] = {}
+
         if self.render:
             self.render_game()
 
         if self.player_move == Player.opponent:
-            opponent_action = self.opponent_choose_move(flatten_board(self.board))
+            opponent_action = self.opponent_choose_move(self.board)
             reward = -self._step(opponent_action)
+            if self.render:
+                self.render_game()
         else:
             reward = 0
 
-        return flatten_board(self.board), reward, self.done, {}
+        return self.board, reward, self.done, {}
 
     def render_game(self):
         render(self.screen, self.board, self.counter_players, self.player_move)
@@ -268,80 +285,74 @@ CIRCLE_COLOR = (239, 231, 200)
 CROSS_COLOR = (66, 66, 66)
 
 
-def flatten_board(board: List[List[str]]) -> List[str]:
-    return [x for xs in board for x in xs]
-
-
 PLAYER_COLORS = {"player": "blue", "opponent": "red"}
 
 
-def draw_pieces(screen, board: List[List[str]], counter_players: Dict) -> None:
+def draw_pieces(screen, board: List[str], counter_players: Dict) -> None:
     # Draw circles and crosses based on board state
 
-    for row in range(BOARD_ROWS):
-        for col in range(BOARD_COLS):
+    for position, counter in enumerate(board):
+        col = position % 3
+        row = position // 3
+        if counter == Cell.EMPTY:
+            continue
+        color = PLAYER_COLORS[counter_players[position]]
+        if counter == Cell.O:
+            pygame.draw.circle(
+                screen,
+                color,
+                (
+                    int(col * SQUARE_SIZE + SQUARE_SIZE // 2),
+                    int(row * SQUARE_SIZE + SQUARE_SIZE // 2),
+                ),
+                CIRCLE_RADIUS,
+                CIRCLE_WIDTH,
+            )
 
-            if board[row][col] == Cell.EMPTY:
-                continue
-
-            color = PLAYER_COLORS[counter_players[(row, col)]]
-
-            if board[row][col] == Cell.O:
-                pygame.draw.circle(
-                    screen,
-                    color,
-                    (
-                        int(col * SQUARE_SIZE + SQUARE_SIZE // 2),
-                        int(row * SQUARE_SIZE + SQUARE_SIZE // 2),
-                    ),
-                    CIRCLE_RADIUS,
-                    CIRCLE_WIDTH,
-                )
-
-            elif board[row][col] == Cell.X:
-                pygame.draw.line(
-                    screen,
-                    color,
-                    (
-                        col * SQUARE_SIZE + SPACE,
-                        row * SQUARE_SIZE + SQUARE_SIZE - SPACE,
-                    ),
-                    (
-                        col * SQUARE_SIZE + SQUARE_SIZE - SPACE,
-                        row * SQUARE_SIZE + SPACE,
-                    ),
-                    CROSS_WIDTH,
-                )
-                pygame.draw.line(
-                    screen,
-                    color,
-                    (col * SQUARE_SIZE + SPACE, row * SQUARE_SIZE + SPACE),
-                    (
-                        col * SQUARE_SIZE + SQUARE_SIZE - SPACE,
-                        row * SQUARE_SIZE + SQUARE_SIZE - SPACE,
-                    ),
-                    CROSS_WIDTH,
-                )
+        elif counter == Cell.X:
+            pygame.draw.line(
+                screen,
+                color,
+                (
+                    col * SQUARE_SIZE + SPACE,
+                    row * SQUARE_SIZE + SQUARE_SIZE - SPACE,
+                ),
+                (
+                    col * SQUARE_SIZE + SQUARE_SIZE - SPACE,
+                    row * SQUARE_SIZE + SPACE,
+                ),
+                CROSS_WIDTH,
+            )
+            pygame.draw.line(
+                screen,
+                color,
+                (col * SQUARE_SIZE + SPACE, row * SQUARE_SIZE + SPACE),
+                (
+                    col * SQUARE_SIZE + SQUARE_SIZE - SPACE,
+                    row * SQUARE_SIZE + SQUARE_SIZE - SPACE,
+                ),
+                CROSS_WIDTH,
+            )
 
 
 def check_and_draw_win(board: List, counter: str, screen: pygame.Surface, player_move: str) -> bool:
 
     for col in range(BOARD_COLS):
-        if board[0][col] == counter and board[1][col] == counter and board[2][col] == counter:
+        if all(board[idx] == counter for idx in [0 + col, 3 + col, 6 + col]):
             draw_vertical_winning_line(screen, col, player_move)
             return True
 
     for row in range(BOARD_ROWS):
-        if board[row][0] == counter and board[row][1] == counter and board[row][2] == counter:
+        if all(board[idx] == counter for idx in [0 + row * 3, 1 + row * 3, 2 + row * 3]):
             draw_horizontal_winning_line(screen, row, player_move)
             return True
 
-    if board[2][0] == counter and board[1][1] == counter and board[0][2] == counter:
-        draw_asc_diagonal(screen, player_move)
+    if all(board[idx] == counter for idx in [0, 4, 8]):
+        draw_desc_diagonal(screen, player_move)
         return True
 
-    if board[0][0] == counter and board[1][1] == counter and board[2][2] == counter:
-        draw_desc_diagonal(screen, player_move)
+    if all(board[idx] == counter for idx in [2, 4, 6]):
+        draw_asc_diagonal(screen, player_move)
         return True
 
     return False
@@ -395,11 +406,6 @@ def draw_desc_diagonal(screen, player_move):
     )
 
 
-def convert_to_indices(number: int) -> Tuple[int, int]:
-    assert number in range(9), f"Output ({number}) not a valid number from 0 -> 8"
-    return number // 3, number % 3
-
-
 def init_pygame():
     pygame.init()
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -407,7 +413,7 @@ def init_pygame():
     return screen
 
 
-def render(screen, board: List, counter_players: Dict[Tuple[int, int], str], player_move: str):
+def render(screen, board: List, counter_players: Dict[int, str], player_move: str):
 
     screen.fill(BG_COLOR)
 
@@ -456,7 +462,9 @@ RIGHT = 3
 
 
 def human_player(state) -> Tuple[int, str]:
-    print("Your move, click to place a tile!")
+    print(
+        "Your move, click to place a tile!\nLeft click to place an `O`.\nRight click to place an `X`."
+    )
 
     while True:
         ev = pygame.event.get()
