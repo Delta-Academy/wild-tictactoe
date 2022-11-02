@@ -1,13 +1,14 @@
-import copy
 import random
 from typing import List
+
+import pytest
 
 from delta_wild_tictactoe.game_mechanics import (
     Cell,
     check_action_valid,
     choose_move_randomly,
     get_empty_board,
-    mark_square,
+    place_counter,
     reward_function,
 )
 
@@ -66,31 +67,55 @@ def test_reward_function():
     assert reward_function(board) == 1
 
 
-def test_mark_square_copy_board():
+def test_place_counter_valid_actions():
     board = get_empty_board()
-    for _ in range(100):
-        position = random.randint(0, 8)
-        counter = random.choice([Cell.X, Cell.O, Cell.EMPTY])
-        board_store = copy.deepcopy(board)
-        new_board = mark_square(board, position, counter, copy_board=True)
-        assert board == board_store
-        assert new_board[position] == counter
+    new_board = place_counter(board, 0, Cell.X)
+    assert new_board[0] == Cell.X
+    assert all(x == Cell.EMPTY for x in new_board[1:])
+    assert all(x == Cell.EMPTY for x in board)
+
+    new_board = place_counter(new_board, 1, Cell.O)
+    assert all(x == Cell.EMPTY for x in board)
+    assert all(x == Cell.EMPTY for x in new_board[2:])
+    assert new_board[0] == Cell.X
+    assert new_board[1] == Cell.O
+
+    new_board = place_counter(new_board, 8, Cell.X)
+    assert all(x == Cell.EMPTY for x in board)
+    assert new_board[0] == Cell.X
+    assert new_board[1] == Cell.O
+    assert new_board[8] == Cell.X
 
 
-def test_mark_square_do_not_copy():
+def test_place_counter_invalid_actions():
     board = get_empty_board()
-    for _ in range(100):
-        position = random.randint(0, 8)
-        counter = random.choice([Cell.X, Cell.O, Cell.EMPTY])
-        new_board = mark_square(board, position, counter, copy_board=False)
-        assert new_board[position] == counter
+    new_board = place_counter(board, 0, Cell.X)
+    with pytest.raises(AssertionError):
+        # Place counter on top of existing counter
+        place_counter(new_board, 0, Cell.X)
+
+    with pytest.raises(AssertionError):
+        # Place empty counter
+        place_counter(new_board, 0, Cell.EMPTY)
+
+    with pytest.raises(AssertionError):
+        # position too big
+        place_counter(new_board, 10, Cell.X)
+
+    with pytest.raises(AssertionError):
+        # position too small
+        place_counter(new_board, -1, Cell.X)
+
+    with pytest.raises(AssertionError):
+        # action not an int
+        place_counter(new_board, 1.5, Cell.X)  # type: ignore
 
 
 def get_random_board():
     board = get_empty_board()
     for position in range(9):
         counter = random.choice([Cell.X, Cell.O, Cell.EMPTY])
-        board = mark_square(board, position, counter, copy_board=False)
+        board[position] = counter
     return board
 
 

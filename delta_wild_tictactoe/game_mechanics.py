@@ -16,13 +16,12 @@ HERE = Path(__file__).parent.resolve()
 
 
 def reward_function(board: List[str]) -> int:
-    """This function returns the reward that would be given to the player who played the most recent
+    """This function returns the reward that wo be given to the player who played the most recent
     move on 'board'.
 
     Returns either 0 or 1
     """
-    winner = is_winner(board)
-    return int(winner)
+    return int(is_winner(board))
 
 
 def choose_move_randomly(board: List[str]) -> Tuple[int, str]:
@@ -35,17 +34,15 @@ def choose_move_randomly(board: List[str]) -> Tuple[int, str]:
     return position, counter
 
 
-def mark_square(
-    board: List[str], position: int, counter: str, copy_board: bool = False
-) -> List[str]:
-    """Insert counter into board at position.
+def place_counter(board: List[str], position: int, counter: str) -> List[str]:
+    """Place counter into board at position.
 
-    This function will mutate the board in place if copy_board is False.
+    Returns a copy of the board so does not mutate the original in place.
     """
-
-    if copy_board:
-        board = board.copy()
+    board = board.copy()
+    check_action_valid((position, counter), board)
     board[position] = counter
+
     return board
 
 
@@ -217,7 +214,7 @@ class WildTictactoeEnv:
 
         position, counter = action
 
-        self.board = mark_square(self.board, position, counter)
+        self.board = place_counter(self.board, position, counter)
         if self.verbose:
             print(f"{self.player_move} makes a move!")
             print(self)
