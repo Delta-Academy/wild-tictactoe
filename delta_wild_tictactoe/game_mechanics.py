@@ -76,7 +76,6 @@ def play_wild_ttt_game(
 
         action = your_choose_move(state)
         state, reward, done, info = game.step(action)
-    print(reward)
 
 
 class Cell:
