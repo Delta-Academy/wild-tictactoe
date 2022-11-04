@@ -25,9 +25,6 @@ def pkl_checker_value_dict(pkl_file: Dict) -> None:
 def check_submission(team_name: str) -> None:
     example_state = get_empty_board()
     expected_choose_move_return_type = tuple
-    game_mechanics_expected_hash = (
-        "f94f1d73d5c3b91b32d743e18c70664194690aa6282b3c07e269f2f403a504d0"
-    )
     expected_pkl_output_type = Dict
 
     return checker.check_submission(
@@ -36,6 +33,5 @@ def check_submission(team_name: str) -> None:
         expected_pkl_type=expected_pkl_output_type,
         pkl_file=load_dictionary(team_name),
         pkl_checker_function=pkl_checker_value_dict,
-        game_mechanics_hash=game_mechanics_expected_hash,
         current_folder=Path(__file__).parent.resolve(),
     )
