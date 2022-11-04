@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Callable, Dict, Iterable, List, Tuple
 
 import numpy as np
+
 import pygame
 
 HERE = Path(__file__).parent.resolve()
