@@ -2,7 +2,6 @@ import random
 from typing import List
 
 import pytest
-
 from delta_wild_tictactoe.game_mechanics import (
     Cell,
     check_action_valid,

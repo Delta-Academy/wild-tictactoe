@@ -3,7 +3,6 @@ from pathlib import Path
 from typing import Dict
 
 import delta_utils.check_submission as checker
-
 from game_mechanics import get_empty_board, load_dictionary
 
 
